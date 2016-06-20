@@ -6,24 +6,16 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
-import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-
 /**
  *
- * @author lalim9800
+ * @author dhalt0019
  */
-public class Game extends JComponent implements KeyListener, MouseMotionListener, MouseListener {
+public class Game extends JComponent implements KeyListener {
 
-    // Height and Width of our game
+    // Height and Width of my game
     static final int WIDTH = 600;
     static final int HEIGHT = 700;
 
@@ -31,78 +23,54 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
     // you just need to select an approproate framerate
     long desiredFPS = 60;
     long desiredTime = (1000) / desiredFPS;
-    //create a int to stote the first pipe x value 
 
+    // create pipe array
     ArrayList<Rectangle> pipes = new ArrayList<>();
 
-    //create player 
-    Rectangle player = new Rectangle(60, 100, 60, 60);
+    //blockguy was born
+    Rectangle blockguy = new Rectangle(60, 100, 60, 60);
 
     //ceate a integer for the y value 
     int movey = 0;
     //create gravity integer 
     int gravity = 1;
-    int thispipe = 0;
+    int pipe = 0;
     int counter = 0;
     //create a speed integer for the pipes
     int blockSpeed = 5;
     //create jump variable (keyboard variables)
     boolean jump = false;
-    //previous jump boolean 
-    boolean pjump = false;
-    //make done varible stops 
+    // back jump boolean 
+    boolean backjump = false;
+    //game done variable
     boolean done = false;
-    //make second screen
+    //make another screen
     int screen = 0;
-    //create a resatart boolean(restart game)
-    boolean restart = false;
-    //create a boolean dead to that game can stop 
+    //create a redo boolean so game retarts
+    boolean redo = false;
+    //create a death boolean so game stops
     boolean death = false;
-
-    
     //create all fonts 
-    Font Coolfont = new Font("Helvetica", Font.BOLD, 50);
-    Font Smallfont = new Font("Helvetica", Font.BOLD, 25);
-//load title screen image 
-    BufferedImage Droid = loadImage("Android_robot.svg.png");
-    //load flappy bird image 
-    BufferedImage backround = loadImage("Sky-Blue-Background-Images.jpg");
-//loading images method 
-
-    public BufferedImage loadImage(String filename) {
-        BufferedImage img = null;
-        try {
-            img = ImageIO.read(new File(filename));
-        } catch (Exception e) {
-            System.out.println("Error loading " + filename);
-        }
-        return img;
-    }
-
+    Font Largefont = new Font("Times New Roman", Font.BOLD, 50);
+    Font Smallfont = new Font("Times New Roman", Font.BOLD, 25);
     // drawing of the game happens in here
     // we use the Graphics object, g, to perform the drawing
-    // NOTE: This is already double buffered!(helps with framerate/speed)
     @Override
     public void paintComponent(Graphics g) {
-
-// always clear the screen first!
-        //make new color for the ground
-       
+        //make color for the ground
         g.clearRect(0, 0, WIDTH, HEIGHT);
-
-        //draw the title screen
+        //draw title screen
         if (screen == 0) {
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, WIDTH, HEIGHT);
             g.setColor(Color.WHITE);
-            g.setFont(Coolfont);
-            g.drawString("ANDRIOD JUMP ", 100, 100);
+            g.setFont(Largefont);
+            g.drawString("Block Jump", 150, 100);
             g.setFont(Smallfont);
             g.drawString("Press Enter To Start", 160, 200);
-            g.drawImage(Droid, 175, 200, 200, 200, null);
 
         }
-        //if screen is = to 1 draw everything
+        //if screen is 1 draw everything
         if (screen == 1) {
             g.setColor(Color.BLACK);
             
@@ -111,15 +79,13 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
             g.setColor(Color.BLUE);
             //go through all of the blocks in the array and draw them 
             for (Rectangle block : pipes) {
-                // draw the block
+                // draw the blocks
                 g.fillRect(block.x, block.y, block.width, block.height);
-
+                
             }
             g.setColor(Color.RED);
-            g.fillRect(player.x, player.y, 50, 50);
-          //draw Droid
-            g.drawImage(Droid, player.x - 30, player.y - 30, 60, 60, null);
-            //set color to green 
+            g.fillRect(blockguy.x, blockguy.y, 50, 50);
+            //set color to white
             g.setColor(Color.WHITE);
             //fill ground
             g.fillRect(0, 647, 600, HEIGHT - 647);
@@ -128,22 +94,22 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
             //DRAW GROUND OUTLINE
             g.fillRect(0, 647, 600, 3);
 
-            //SET COLOR TO BLACK 
+            //SET COLOR TO WHITE
             g.setColor(Color.WHITE);
-            g.setFont(Coolfont);
-            //out put the pipe counter to the screen
-            g.drawString("" + counter / 2, 500, 100);
+            g.setFont(Largefont);
+            //pipe counter on the screen
+            g.drawString("" + counter / 2, 275, 100);
 
-                if (death) { //if game ends 
-                //set new font created 
-                g.setFont(Coolfont);
-                //output gameover (tell user game is over )
+                //if game ends 
+                 if (death) {
+                g.setFont(Largefont);
+                //gameover
                 g.drawString("GAMEOVER", 125, 200);
-                //set custom font "small"
+                //small font
                 g.setFont(Smallfont);
-                //reveal score 
+                //score 
                 g.drawString(" SCORE: " + counter / 2, HEIGHT / 4, 275);
-                //print out  the retart key on screen 
+                //restart screen 
                 g.drawString("Press R to restart Game", 150, 350);
                 // game drawing ends here 
 
@@ -177,38 +143,36 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
             //if screen is 1 then start game 
             if (screen == 1 && death == false) {
 
-            //gravity pulling player down
+            //gravity
                 movey = movey + gravity;
                 //jumping 
-                if (jump && !pjump) {
-                    //make a big change in y direction
+                if (jump && !backjump) {
+                    //change in y direction
                     movey = -15;
-                    pjump = true;
+                    backjump = true;
                     
 
                 }
 
-                //move player in y direction 
-                player.y = player.y + movey;
-                //if feet of playet become lower than floor
-                if (player.y + player.height > 647) {
-                    player.y = 647 - player.height;
+                //move blockguy in y direction 
+                blockguy.y = blockguy.y + movey;
+                //if blockguy becomes lower than floor
+                if (blockguy.y + blockguy.height > 647) {
+                    blockguy.y = 647 - blockguy.height;
                     movey = 0;
 
                 }
 
-                // go through all blocks and decrase the x value by 5 to move blocks 
+                //decrease the x value by 5 to move the blocks 
                 for (Rectangle block : pipes) {
                     block.x = block.x - blockSpeed;
-                    if (player.intersects(block)) {
-                        //play block hitting sound 
-
+                    if (blockguy.intersects(block)) {
                         death = true;
 
                     }
 
                 }
-                //when the block gets to x=-2500 respawn at x=500
+                //when the block gets to x = -2500 respawn at x=500
                 for (Rectangle block : pipes) {
                     if (block.x == -2500) {
                         block.x = 500;
@@ -216,23 +180,17 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
                     }
                 }
 
-                //if player hits the ground or if player hits the roof end game 
-                if (player.y == 597 || player.y <= 0) {//play block hitting sounds(dead sound)
+                //if blockguy hits the ground or if he hits the roof, end game 
+                if (blockguy.y == 597 || blockguy.y <= 0){
                     death = true;
 
                 }
 
                 for (Rectangle block : pipes) {
-                    if (block.x + 50 == player.x) {
-                        //play counter noise 
-
-                        //add 1 to the counter each time 
+                    if (block.x + 50 == blockguy.x) {
+                        
+                        //add 1 to counter each time 
                         counter++;
-
-                    }
-                    //if dead is true(gameover) play sound 
-                    if (death == true) {
-                        //play game over music 
 
                     }
 
@@ -240,7 +198,7 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
 
             }
             //if restart is equal to true restart the game
-            if (restart == true) {
+            if (redo == true) {
                 initialize();
                 screen = 1;
 
@@ -303,14 +261,14 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
         if (key == KeyEvent.VK_SPACE) {
             jump = true;
         }
-        //if enter is clicked change to screen 1 
+        //if enter is clicked screen goes to 1
         //if enter is hit the screen changes to 1 and game will start 
         if (key == KeyEvent.VK_ENTER && screen == 0) {
             screen = 1;
         }
         //if "R" is clicked and the game is over then restart the game 
         if (key == KeyEvent.VK_R && death == true) {
-            restart = true;
+            redo = true;
 
         }
 
@@ -319,53 +277,24 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
     @Override
     public void keyReleased(KeyEvent e) {
         int key = e.getKeyCode();
-        //if space bar is pressed player jumps 
+        //if space bar is pressed blockguy jumps 
         if (key == KeyEvent.VK_SPACE) {
             jump = false;
-            pjump = false;
+            backjump = false;
 
         }
 
     }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
-//create a method that will initaize all drawings and variables 
-
+    //create method that will initaize all drawings and variables 
     public void initialize() {
-        pipes.clear();//clear all drawings 
+        pipes.clear();//redraw all drawings
+        //draw top pipes
         pipes.add(new Rectangle(1000, 0, 100, 200));
         pipes.add(new Rectangle(1500, 0, 100, 300));
         pipes.add(new Rectangle(2000, 0, 100, 100));
         pipes.add(new Rectangle(2500, 0, 100, 300));
         pipes.add(new Rectangle(3000, 0, 100, 350));
         pipes.add(new Rectangle(3500, 0, 100, 100));
-
         //draw bottom pipes 
         pipes.add(new Rectangle(1000, 450, 100, 647 - 450));
         pipes.add(new Rectangle(1500, 550, 100, 647 - 550));
@@ -375,18 +304,17 @@ public class Game extends JComponent implements KeyListener, MouseMotionListener
         pipes.add(new Rectangle(3500, 350, 100, 647 - 350));
         //reset all varibles 
         counter = 0;
-        //redraw player at original starting point
-        player = new Rectangle(60, 100, 50, 50);
+        //blockguy is born again
+        blockguy = new Rectangle(60, 100, 50, 50);
         movey = 0;
         gravity = 1;
-        thispipe = 0;
+        pipe = 0;
         counter = 0;
         jump = false;
-        pjump = false;
+        backjump = false;
         done = false;
         screen = 0;
-        restart = false;
+        redo = false;
         death = false;
-
     }
 }
